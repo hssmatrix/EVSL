@@ -1,5 +1,5 @@
-=======================================================================
- --> Version 1.0  Latest changes made on: Thu Feb 2 15:35:51 CST 2017
+
+ --> Version 1.0  Latest changes made on: Feb  8 14:57:14 PST 2017 <--
 
 -----------------------------------------------------------------------
   EVSL:  ChebLanTR, ChebLanNR,  ChebSI, RatLanTr, and RatLanNr  
@@ -57,12 +57,32 @@ FILES:
 
   liblancheb.a  : library
 
-  TESTS_Gen/ and  TESTS_Lap/ : 
-     directories containing  test drivers for
-     simple model Laplacean matrices  (TESTS_Lap) or general matrices in
-     sparse format read from a file (TESTS_Gen) 
-     See below and 00README files therein for further information
+  TESTS_Gen/         test drivers for Generalized Eigenvalue problem
+    LapPLanR_Gen.c : Laplacian matrices. Polynomial filtering T-R Lanczos
+    LapRLanN_Gen.c : Laplacian matrices. Rational filtering Lanczos
+    lapl.c         : functions to set up a laplacean matrix and also to 
+                     compute the exact eigenvalues of Laplacians
+    io.c           : parse command-line input parameters
 
+  TEST_Lap/              test drivers for Laplacean matrices
+    LapPLanN.c         : Polynomial filtering non-restart Lanczos
+    LapPLanN_MatFree.c : "matrix-free" version: not forming matrix but
+                         passing mat-vec function
+    LapPLanR.c         : Polynomial filtering T-R Lanczos
+    LapPSI.c           : Polynomial filtering subspace iterations
+    LapRLanN.c         : Rational filtering non-restart Lanczos
+    LapRLanR.c         : Rational filtering T-R Lanczos
+    lapl.c             : Same as above
+    io.c               : Same as above
+
+  TESTS_Mat/     general matrices in sparse format read from a file
+    GenPLanN.c : Polynomial filtering non-restart Lanczos
+    GenPLanR.c : Polynomial filtering T-R Lanczos
+    GenPSI.c   : Polynomial filtering subspace iterations
+    GenRLanN.c : Rational filtering non-restart Lanczos
+    GenRLanR.c : Rational filtering T-R Lanczos
+ 
+  See below and 00README files therein for further information
 
 -----------------------------------------------------------------------
   INSTALLATION
@@ -81,46 +101,43 @@ FILES:
      make in the directory SRC will create the library liblancheb.a
       
   Test programs:
-      In directories TESTS_Lap and TESTS_Gen you will find makefiles to 
+      In directories TESTS_Lap, TESTS_Gen and TESTS_Mat you will find makefiles to 
       run sample drivers that test a few different situations.
 
-      TESTS_Lap/ -- generate Laplacean matrices and compute eigenvalues in
-                    given intervals. You will find 5 drivers
-           LapPLanN.c --> poly. filtering non-restarted Lanczos 
-           LapPLanR.c --> poly. filtering thick-restart Lanczos
-           LapPSI.c   --> poly. filtering subspace iteration
-           LapRLanN.c --> rational filtering non-restart Lanczos
-           LapRLanR.c --> rational filtering thick-restart Lanczos
-    	   lapl.c     --> functions to set up a laplacean matrix and also to 
-                          compute the exact eigenvalues of Laplacians
-
-           see details in the 00README file in the directory TESTS_Lap/
-
-      TESTS_Gen/ -- read a matrix from file and compute eigenvalues in
-                    given intervals. Here you will find 6 drivers
-           GenPLanN.c --> poly. filtering non-restarted Lanczos 
-           GenPLanR.c --> poly. filtering thick-restart Lanczos
-           GenPSI.c   --> poly. filtering subspace iteration
-           GenPLanR_omp.c --> poly. filtering thick-restart Lanczos with openMP
-           GenRLanN.c --> rational filtering non-restart Lanczos
-           GenRLanR.c --> rational filtering thick-restart Lanczos
-    
-           see details in the 00README file in the directory TESTS_Gen/
+  SuiteSparse:
+      SuiteSparse is the default direct linear solver of EVSL, for the
+      rational filtering and generalized eigenvalue problem.
+      If EVSL is compiled with SuiteSparse and the users do not provide
+      function for solving systems with (A-SIGMA*I) and (A-SIGMA*B), 
+      EVSL will use UMFPACK to factorize (A-SIGMA*I) or (A-SIGMA*B).
+      If EVSL is not compiled with SuitSparse, these functions must be
+      provided by the users.
+      For generalized eigenvalue problem, the current version of EVSL
+      will factor B with CHOLMOD. So, CHOLMOD is required.
+ 
+  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+  NOTE:  SuiteSparse is NOT distributed with EVSL, and is Copyrighted
+         by Timothy Davis.  Please refer to that package for its License.
+         [http://faculty.cse.tamu.edu/davis/suitesparse.html]
+  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
 
 -----------------------------------------------------------------------
-  RATIONAL                                                   FILTERING
-  -----------------------------------------------------------------------
+  LINKING  WITH  UMFPACK (SuiteSparse 4.5.3)
+-----------------------------------------------------------------------
+  UMFPACK and CHOLMOD requires AMD, ,  COLAMD, CCOLAMD
+  and  CAMD,  and  optionally  METIS 5.1.0.   Compile  each  of  these
+  packages  to  have  the  library  file in  the  Lib  directory.   If
+  SuiteSparse  is configured  with METIS,  give the  path to  METIS (v
+  5.1.0)  as  well   (to  make  libmetis.a,  type   `make  config'  in
+  metis-5.1.0/ and then `make') 
+  Please  refer to SuiteSparse and METIS for installation details.
+
+-----------------------------------------------------------------------
+  RATIONAL FILTERING
+-----------------------------------------------------------------------
   Rational  filtering  requires  solving  linear  systems  (where  the
   coefficient matrix  is the  original matrix  shifted by  a *complex*
-  shift).  A linear solver routine  must be provided.  By default EVSL
-  uses UMFPACK, a sparse direct  solver package by T. Davis.  (version
-  4.5.3 has been tested)
-
-  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
-  NOTE:  SuiteSparse is NOT distributed with EVSL, and is Copyrighted (c)
-    by Timothy Davis.  Please refer to that package for its License.
-	  [http://faculty.cse.tamu.edu/davis/suitesparse.html]
-  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+  shift).  A linear solver routine  must be provided.  
 
   After  having  computed  the  rational  filter  by  "find_ratf(intv,
   &rat)", users  can call "set_ratf_solfunc(&rat, &Acsr,  NULL, NULL)"
@@ -132,7 +149,7 @@ FILES:
   functions and the associated data for each pole.  "func" is an array
   of function  pointers of  length num of  poles, i.e.,  rat->num. So,
   func[i]  is the  function  to solve  the systems  with  pole i,  the
-  coefficient matrix of  which is $A - s_i I$,  where s_i = rat->zk[i]
+  coefficient matrix of  which is $A - s_i I(or, B)$,  where s_i = rat->zk[i]
   is the  complex shift.  "data"  is an array  of (void*) of  the same
   length,  where data[i]  is the  data needed  by func[i].   
 
@@ -149,18 +166,6 @@ FILES:
   Once "set_ratf_solfunc" is done, rational filtering Lanczos methods 
   should be ready to use.
       
------------------------------------------------------------------------
-  LINKING  WITH  UMFPACK (SuiteSparse        4.5.3)
------------------------------------------------------------------------
-  The  makefiles   in  TESTS_Lap   and  TEST_Gen,  include   paths  to
-  SuiteSparse 4.5.3.   UMFPACK requires AMD, CHOLMOD,  COLAMD, CCOLAMD
-  and  CAMD,  and  optionally  METIS 5.1.0.   Compile  each  of  these
-  packages  to  have  the  library  file in  the  Lib  directory.   If
-  SuiteSparse  is configured  with METIS,  give the  path to  METIS (v
-  5.1.0)  as  well   (to  make  libmetis.a,  type   `make  config'  in
-  metis-5.1.0/ and then `make') Please  refer to SuiteSparse and METIS
-  for installation details.
-
 -----------------------------------------------------------------------
   MATRIX-FREE SOLVERS
 -----------------------------------------------------------------------
@@ -210,9 +215,18 @@ FILES:
   where the first input is the size of the "matrix", the second input is
   the  function pointer  and the  third one  is the  data pointer.  Once
   "SetMatvecFunc"  is  called,  EVSL  will  use  the  registered  matvec
-  function to perform all matvecs.
+  function to perform all matvecs with A.
 
   Users should first create a function  wrapper of the above type for an
   external matvec routine. Then, following  the steps in the example, it
   will be straightforward to use it in EVSL.
 
+-----------------------------------------------------------------------
+  GENERALIZED EIGENVALUE PROBLEM
+-----------------------------------------------------------------------
+  For solving A * x = \lambda * B * x, the users must first call
+  
+    SetRhsMatrix(&Bcsr)
+
+  to pass B as a CSR matrix to EVSL. Internally, EVSL will use CHOLMOD
+  to factorize B and save the Cholesky factors.
