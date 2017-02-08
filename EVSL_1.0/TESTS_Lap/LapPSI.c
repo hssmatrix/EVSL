@@ -91,11 +91,12 @@ int main(int argc, char *argv[]) {
 
   /*-------------------- call kpmdos to get the DOS for dividing the spectrum*/
   /*-------------------- define kpmdos parameters */
-  Mdeg = 40;
-  nvec = 100;
-  mu = malloc((Mdeg+1)*sizeof(double));
-
+  Mdeg = 300;
+  nvec = 60;
+  /*-------------------- start EVSL */
+  EVSLStart();
   //-------------------- call kpmdos
+  mu = malloc((Mdeg+1)*sizeof(double));
   double t = cheblan_timer();
   ierr = kpmdos(&Acsr, Mdeg, 1, nvec, xintv, mu, &ecount);
   t = cheblan_timer() - t;
@@ -228,7 +229,8 @@ int main(int argc, char *argv[]) {
   free_csr(&Acsr);
   free(mu);
   fclose(fstats);
-
+  /*-------------------- finalize EVSL */
+  EVSLFinish();
   return 0;
 }
 

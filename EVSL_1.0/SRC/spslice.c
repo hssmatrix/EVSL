@@ -169,7 +169,7 @@ void intChx(int Mdeg, double *mu, int npts, double *xi, double *yi) {
  *
  *----------------------------------------------------------------------*/
 int spslicer(double *sli, double *mu, int Mdeg, double *intv, int n_int, int npts) {
-  int ls, ii;
+  int ls, ii, err=0;
   double  ctr, wid, aL, bL, target, aa, bb;
 
   if (check_intv(intv, stdout) < 0) {
@@ -206,7 +206,7 @@ int spslicer(double *sli, double *mu, int Mdeg, double *intv, int n_int, int npt
   linspace(aL, bL, npts, xi);
   //printf(" aL %15.3e bL %15.3e \n",aL,bL);
   //-------------------- get all integrals at the xi's 
-  //-------------------- exact integrals  used.
+  //-------------------- exact integrals used.
   intChx(Mdeg, mu, npts, xi, yi) ; 
   //-------------------- goal: equal share of integral per slice
   target = yi[npts-1] / (double)n_int;
@@ -234,20 +234,27 @@ int spslicer(double *sli, double *mu, int Mdeg, double *intv, int n_int, int npt
 
   // use the unadjust left boundary
   sli[n_int] = intv[1];
-  /*-------------------- free arrays */
-  free(xi);
-  free(yi);
 
   //-------------------- check errors
   if (ls != n_int) {
-    return 1;
+    err = 1;
   }
   for (ii=1; ii<=n_int; ii++) {
     if (sli[ii] <= sli[ii-1]) {
-      return 2;
+      err += 2;
+      break;
     }
   }
-  return 0;
+
+  if (err) {
+    save_vec(npts, xi, "OUT/xi.out");
+    save_vec(npts, yi, "OUT/yi.out");
+  }
+
+  /*-------------------- free arrays */
+  free(xi);
+  free(yi);
+  return err;
 }
 
 

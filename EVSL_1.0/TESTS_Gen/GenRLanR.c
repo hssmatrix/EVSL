@@ -53,7 +53,10 @@ int main () {
   double beta = 0.01; // beta in the LS approximation
   /* slicer parameters */
   npnts = 1000;
-  Mdeg = 100;  nvec = 100;  
+  Mdeg = 300;
+  nvec = 100;
+  /*-------------------- start EVSL */
+  EVSLStart();
   /* interior eigensolver parameters */  
   double *mu = malloc((Mdeg+1)*sizeof(double)); // coeff. for kpmdos
   int *counts; // #ev computed in each slice
@@ -268,6 +271,8 @@ int main () {
   free(mu);
   if( flog != stdout ) fclose ( flog );
   fclose( fmat );
+  /*-------------------- finalize EVSL */
+  EVSLFinish();
   return 0;
 }
 

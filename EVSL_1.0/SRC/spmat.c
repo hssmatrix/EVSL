@@ -209,8 +209,9 @@ int matvec_A(csrMat *A, double *x, double *y) {
   return 0;
 }
 
-/* @warning: A must have been `sortrow' already */
-int check_full_diag(char type, csrMat *A) {
+/* @brief check if a triangular matrix has all nonzero diag entries
+ * @warning: A must have been `sortrow' already */
+int check_tri_full_diag(char type, csrMat *A) {
   int i,j;
   for (i=0; i<A->nrows; i++) {
     /* if row i is empty, error */
@@ -261,15 +262,17 @@ int tri_sol_upper(char trans, csrMat *R, double *b, double *x) {
   return 0;
 }
 
-/* inline function used by mat add */
-inline void matadd_insert(double t, csrMat *A, csrMat *C, int i, int *k, int *j, int *map) {
-  if (*k > C->ia[i] && C->ja[*k-1] == A->ja[*j]) {
+/* inline function used by matadd below
+ * insert an element pointed by j of A (times t) to locattion k in C */
+inline void matadd_insert(double t, csrMat *A, csrMat *C, int i, int *k, 
+                          int *j, int *map) {
+  if (*k > C->ia[i] && C->ja[(*k)-1] == A->ja[*j]) {
     if (map) {
       /* j maps to k-1 in C */
-      map[*j] = *k - 1;
+      map[(*j)] = (*k) - 1;
     }
     /* add to existing entry */
-    C->a[*k-1] += t * A->a[*j];
+    C->a[(*k)-1] += t * A->a[*j];
   } else {
     if (map) {
       /* jA maps to k in C */
@@ -295,7 +298,7 @@ int matadd(double alp, double bet, csrMat *A, csrMat *B, csrMat *C,
   /* nnz of A and B */
   nnzA = A->ia[A->nrows];
   nnzB = B->ia[B->nrows];
-  /* alloc C [at most has nnz = nnzA + nnzB] */
+  /* alloc C [at most has nnzC = nnzA + nnzB] */
   csr_resize(A->nrows, A->ncols, nnzA+nnzB, C);
   /* nnz counter of C */
   k = 0; 
@@ -314,13 +317,13 @@ int matadd(double alp, double bet, csrMat *A, csrMat *B, csrMat *C,
           matadd_insert(bet, B, C, i, &k, &jB, mapB);
         }
       } else if (jA == A->ia[i+1]) {
-        for (; jB < B->ia[i+1]; jB++) {
+        for (; jB < B->ia[i+1]; ) {
           /* instert jB */
           matadd_insert(bet, B, C, i, &k, &jB, mapB);
         }
         break;
       } else {
-        for (; jA < A->ia[i+1]; jA++) {
+        for (; jA < A->ia[i+1]; ) {
           /* insert jA */
           matadd_insert(alp, A, C, i, &k, &jA, mapA);
         }

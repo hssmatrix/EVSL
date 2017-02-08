@@ -63,7 +63,10 @@ int main () {
   tol = 1e-10;
   // set parameters 
   npnts = 1000;
-  Mdeg = 70;  nvec = 30;      // C60
+  Mdeg = 300;  
+  nvec = 60;
+  /*-------------------- start EVSL */
+  EVSLStart();
 
   // interior eigensolver parameters  
   max_its = 1000; //1000;  // max number of iterations
@@ -273,5 +276,7 @@ int main () {
   free(mu);
   if( flog != stdout ) fclose ( flog );
   fclose( fmat );
+  /*-------------------- finalize EVSL */
+  EVSLFinish();
   return 0;
 }

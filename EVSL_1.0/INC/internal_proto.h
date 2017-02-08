@@ -73,7 +73,7 @@ void csr_resize(int nrow, int ncol, int nnz, csrMat *csr);
 //
 void sortrow(csrMat *A);
 //
-int check_full_diag(char type, csrMat *A);
+int check_tri_full_diag(char type, csrMat *A);
 //
 int tri_sol_upper(char trans, csrMat *R, double *b, double *x);
 //

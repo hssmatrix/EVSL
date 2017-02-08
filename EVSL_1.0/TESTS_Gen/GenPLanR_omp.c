@@ -53,8 +53,10 @@ int main () {
   double *vinit;
   tol = 1e-8;
   //-------------------- slicer parameters
-  Mdeg = 100;
-  nvec = 100;
+  Mdeg = 300;
+  nvec = 60;
+  /*-------------------- start EVSL */
+  EVSLStart();
   //-------------------- interior eigensolver parameters  
   double *mu = malloc((Mdeg+1)*sizeof(double));
   int *counts; 
@@ -284,5 +286,7 @@ int main () {
   free(mu);
   if( flog != stdout ) fclose ( flog );
   fclose( fmat );
+  /*-------------------- finalize EVSL */
+  EVSLFinish();
   return 0;
 }

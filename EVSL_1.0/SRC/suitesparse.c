@@ -27,7 +27,6 @@ void umfpack_solvefunc(int n, double *br, double *bz, double *xr, double *xz,
                    Numeric, Control, NULL);
 }
 
-#if 1
 int set_ratf_solfunc_default(csrMat *A, csrMat *BB, ratparams *rat) {
   int i, j, nrow, ncol, nnzB, nnzC, *map, status;
   csrMat *B, C, eye;
@@ -53,8 +52,12 @@ int set_ratf_solfunc_default(csrMat *A, csrMat *BB, ratparams *rat) {
    * The matadd routine can guarantee this
    * map from nnz in B to nnz in C, useful for multi-poles */
   Malloc(map, nnzB, int);
-  /* C = A + 0.0 * B */
+  /* C = A + 0.0 * B 
+   * This computes the pattern of A + B
+   * and also guarantee C has sorted rows 
+   * map is the mapping from nnzB to nnzC */
   matadd(1.0, 0.0, A, B, &C, NULL, map);
+
   nnzC = C.ia[nrow];
   /* malloc and copy to SuiteSparse matrix */
   Malloc(Cp, nrow+1, SuiteSparse_long);
@@ -68,13 +71,13 @@ int set_ratf_solfunc_default(csrMat *A, csrMat *BB, ratparams *rat) {
   }
   Cx = C.a;
   /* pole loop
-   * for each pole we shift with B and factorize 
-   */
+   * for each pole we shift with B and factorize */
   zkr1 = 0.0;
   for (i=0; i<rat->num; i++) {
     /* the complex shift for pole i */
     double zkr = creal(rat->zk[i]);
     double zkc = cimag(rat->zk[i]);
+
     // shift B
     for (j=0; j<nnzB; j++) {
       int p = map[j];
@@ -123,112 +126,6 @@ int set_ratf_solfunc_default(csrMat *A, csrMat *BB, ratparams *rat) {
 
   return 0;
 }
-
-#else
-int set_ratf_solfunc_default(csrMat *A, csrMat *B, ratparams *rat) {
-  int i, j, n, nnz, nnz2=0, status, *diag;
-  SuiteSparse_long *Ap, *Ai;
-  double *Ax, *Az;
-  void *Symbolic=NULL, *Numeric=NULL;
-
-  n = A->nrows;
-  nnz = A->ia[n];
-
-  /* save the position of diag entry of each row */
-  Malloc(diag, n, int);
-  /* UMFPACK matrix */
-  Malloc(Ap, n+1, SuiteSparse_long);
-  /* allocate nnz+n spaces, in the worst case: A has no nonzero diag entry */
-  Malloc(Ai, nnz+n, SuiteSparse_long);
-  Malloc(Ax, nnz+n, double);
-  Malloc(Az, nnz+n, double);
-
-  /* copy A to Ap, Ai, Ax, Az
-   * we consider general cases where A may not have full diagonal
-   * this code will handle these cases */
-  Ap[0] = 0;
-  for (i=0; i<n; i++) {
-    int rowi_has_diag = 0;
-    for (j=A->ia[i]; j<A->ia[i+1]; j++) {
-      int col = A->ja[j];
-      double val = A->a[j];
-      /* copy value and col idx */
-      Ai[nnz2] = col;
-      Ax[nnz2] = val;
-      Az[nnz2] = 0.0;
-      /* mark diagonal entry */
-      if (col == i) {
-        diag[i] = nnz2;
-        rowi_has_diag = 1;
-      }
-      nnz2++;
-    }
-    /* if diag not found, we need to create it */
-    if (!rowi_has_diag) {
-      Ai[nnz2] = i;
-      Ax[nnz2] = 0.0;
-      Az[nnz2] = 0.0;
-      diag[i] = nnz2;
-      nnz2++;
-    }
-    /* done with row i */
-    Ap[i+1] = nnz2;
-  }
-
-  /* for each pole we shift the diagonal and factorize */
-  for (i=0; i<rat->num; i++) {
-    /* the complex shift for pole i */
-    double zkr = creal(rat->zk[i]);
-    double zkc = cimag(rat->zk[i]);
-    /* shift the diagonal */
-    for (j=0; j<n; j++) {
-      int dj = diag[j];
-      Ax[dj] -= zkr;
-      Az[dj] -= zkc;
-    }
-    
-    /* only do symbolic factorization once */
-    if (i==0) {
-      /* Symbolic Factorization */
-      status = umfpack_zl_symbolic (n, n, Ap, Ai, Ax, Az, &Symbolic, NULL, NULL);
-      if (status < 0) {
-        printf("umfpack_zl_symbolic failed, %d\n", status);
-        return 1;
-      }
-    }
-    /* Numerical Factorization */
-    status = umfpack_zl_numeric(Ap, Ai, Ax, Az, Symbolic, &Numeric, NULL, NULL);
-    if (status < 0) {
-      printf("umfpack_zl_numeric failed and exit, %d\n", status);
-      return 1;
-    }
-
-    /* set solver pointer and data */
-    rat->solshift[i] = umfpack_solvefunc;
-    rat->solshiftdata[i] = Numeric;
-    
-    /* shift the diagonal back */
-    for (j=0; j<n; j++) {
-      int dj = diag[j];
-      Ax[dj] += zkr;
-      Az[dj] += zkc;
-    }
-  } // for (i=0; i<rat->num,...)
-
-  /* free the symbolic fact */
-  if (Symbolic) {
-    umfpack_zl_free_symbolic(&Symbolic);
-  }
-
-  free(diag);
-  free(Ap);
-  free(Ai);
-  free(Ax);
-  free(Az);
-
-  return 0;
-}
-#endif
 
 void free_rat_default_sol(ratparams *rat) {
   int i;
@@ -404,7 +301,7 @@ int set_default_LBdata(csrMat *B) {
     sortrow(&LBdata->R);
   }
   /* check diag of */
-  if (check_full_diag('U', &LBdata->R)) {
+  if (check_tri_full_diag('U', &LBdata->R)) {
     printf("error: R has zero diag entry!\n");
     return 1;
   }

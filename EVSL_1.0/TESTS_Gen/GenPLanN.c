@@ -52,8 +52,10 @@ int main () {
   //-------------------- tolerance for stopping criterion
   tol = 1e-8;  
   //-------------------- slicer parameters 
-  Mdeg = 40;
-  nvec = 100;
+  Mdeg = 300;
+  nvec = 60;
+  /*-------------------- start EVSL */
+  EVSLStart();
   //-------------------- interior eigensolver parameters  
   double *mu = malloc((Mdeg+1)*sizeof(double));
   int *counts; 
@@ -141,7 +143,7 @@ int main () {
 	return 1;
       }
       fprintf(fstats, " Time to build DOS (kpmdos) was : %10.2f  \n",t);
-      fprintf(fstats, "Step 1a: Estimated eig count in interval - %.15e \n",ecount);
+      fprintf(fstats, "Step 1a: Estimated eig count: %.15e \n",ecount);
       if ((ecount <0) | (ecount > n)) {
         printf(" e-count estimate is incorrect \n ");
         exit(7);
@@ -157,7 +159,8 @@ int main () {
         return 1;
       }
     }
-    fprintf(fstats,"DOS parameters: Mdeg = %d, nvec = %d, npts = %d\n",Mdeg, nvec, npts);
+    fprintf(fstats,"DOS parameters: Mdeg = %d, nvec = %d, npts = %d\n",
+            Mdeg, nvec, npts);
     fprintf(fstats, "Step 1b: Slices found: \n");
     for (j=0; j<n_intv;j++)
       fprintf(fstats, " %2d: [%.15e , %.15e]\n", j+1, sli[j],sli[j+1]);
@@ -248,5 +251,8 @@ int main () {
   free(mu);
   if( flog != stdout ) fclose ( flog );
   fclose( fmat );
+  /*-------------------- finalize EVSL */
+  EVSLFinish();
+  
   return 0;
 }
