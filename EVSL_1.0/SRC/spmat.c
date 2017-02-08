@@ -261,8 +261,6 @@ int tri_sol_upper(char trans, csrMat *R, double *b, double *x) {
   return 0;
 }
 
-/* C = alp * A + bet * B 
- * Note: A and B MUST be sorted */
 /* inline function used by mat add */
 inline void matadd_insert(double t, csrMat *A, csrMat *C, int i, int *k, int *j, int *map) {
   if (*k > C->ia[i] && C->ja[*k-1] == A->ja[*j]) {
@@ -285,6 +283,8 @@ inline void matadd_insert(double t, csrMat *A, csrMat *C, int i, int *k, int *j,
   (*j) ++;
 }
 
+/* C = alp * A + bet * B 
+ * Note: A and B MUST be sorted, C will be sorted */
 int matadd(double alp, double bet, csrMat *A, csrMat *B, csrMat *C,
            int *mapA, int *mapB) {
   int nnzA, nnzB, i, jA, jB, k;
@@ -334,3 +334,14 @@ int matadd(double alp, double bet, csrMat *A, csrMat *B, csrMat *C,
   return 0;
 }
 
+/* return an identity matrix of dimension n */
+int speye(int n, csrMat *A) {
+  int i;
+  csr_resize(n, n, n, A);
+  for (i=0; i<n; i++) {
+    A->ia[i] = A->ja[i] = i;
+    A->a[i] = 1.0;
+  }
+  A->ia[n] = n;
+  return 0;
+}

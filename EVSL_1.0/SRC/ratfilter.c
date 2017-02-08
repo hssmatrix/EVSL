@@ -433,14 +433,13 @@ int set_ratf_solfunc(ratparams *rat, csrMat *A, csrMat *B, linSolFunc *funcs,
         printf("warning [%s (%d)]: Rhs mat B has not been set with 'SetRhsMatrix'\n",
                __FILE__, __LINE__);
       }
-      err = set_ratf_solfunc_gen_default(A, B, rat);
     } else {
       if (evsldata.hasB) {
         printf("warning [%s (%d)]: Rhs mat B has been set but B=NULL is given\n",
                __FILE__, __LINE__);
       }
-      err = set_ratf_solfunc_default(A, rat);
     }
+    err = set_ratf_solfunc_default(A, B, rat);
 #else
     printf("error: EVSL was not compiled with the default solver, ");
     printf("so the users must provide solvers\n");

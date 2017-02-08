@@ -27,39 +27,50 @@ void umfpack_solvefunc(int n, double *br, double *bz, double *xr, double *xz,
                    Numeric, Control, NULL);
 }
 
-int set_ratf_solfunc_gen_default(csrMat *A, csrMat *B, ratparams *rat) {
+#if 1
+int set_ratf_solfunc_default(csrMat *A, csrMat *BB, ratparams *rat) {
   int i, j, nrow, ncol, nnzB, nnzC, *map, status;
-  csrMat C;
+  csrMat *B, C, eye;
   /* UMFPACK matrix for the shifted matrix 
    * C = A - s * B */
   SuiteSparse_long *Cp, *Ci;
-  double *Cx, *Cz;
+  double *Cx, *Cz, zkr1;
   void *Symbolic=NULL, *Numeric=NULL;
   
   nrow = A->nrows;
   ncol = A->ncols;
+
+  if (BB) {
+    B = BB;
+  } else {
+    /* if B==NULL, B=I, standard e.v. prob */
+    speye(nrow, &eye);
+    B = &eye;
+  }
+
   nnzB = B->ia[nrow];
-  /* map from nnz in B to nnz in C */
+  /* NOTE: SuiteSparse matrix that must be sorted.
+   * The matadd routine can guarantee this
+   * map from nnz in B to nnz in C, useful for multi-poles */
   Malloc(map, nnzB, int);
   /* C = A + 0.0 * B */
   matadd(1.0, 0.0, A, B, &C, NULL, map);
   nnzC = C.ia[nrow];
-  
+  /* malloc and copy to SuiteSparse matrix */
   Malloc(Cp, nrow+1, SuiteSparse_long);
   Malloc(Ci, nnzC, SuiteSparse_long);
-  Malloc(Cx, nnzC, double);
-  Malloc(Cz, nnzC, double);
-  /* copy to SuiteSparse matrix */
+  Calloc(Cz, nnzC, double);
   for (i=0; i<nrow+1; i++) {
     Cp[i] = C.ia[i];
   }
   for (i=0; i<nnzC; i++) {
     Ci[i] = C.ja[i];
-    Cx[i] = C.a[i];
-    Cz[i] = 0.0;
   }
-  free_csr(&C);
-  /* for each pole we shift with B and factorize */
+  Cx = C.a;
+  /* pole loop
+   * for each pole we shift with B and factorize 
+   */
+  zkr1 = 0.0;
   for (i=0; i<rat->num; i++) {
     /* the complex shift for pole i */
     double zkr = creal(rat->zk[i]);
@@ -69,7 +80,7 @@ int set_ratf_solfunc_gen_default(csrMat *A, csrMat *B, ratparams *rat) {
       int p = map[j];
       double v = B->a[j];
       CHKERR(Ci[p] != B->ja[j]);
-      Cx[p] -= zkr * v;
+      Cx[p] -= (zkr - zkr1) * v;
       Cz[p] = -zkc * v;
     }
 
@@ -89,18 +100,11 @@ int set_ratf_solfunc_gen_default(csrMat *A, csrMat *B, ratparams *rat) {
       printf("umfpack_zl_numeric failed and exit, %d\n", status);
       return 1;
     }
-
     /* set solver pointer and data */
     rat->solshift[i] = umfpack_solvefunc;
     rat->solshiftdata[i] = Numeric;
-
-    /* shift B back */
-    for (j=0; j<nnzB; j++) {
-      int p = map[j];
-      double v = B->a[j];
-      Cx[p] += zkr * v;
-      //Cz[p] = 0.0;
-    }
+    /* for the next shift */
+    zkr1 = zkr;
   } /* for (i=...)*/
   
   /* free the symbolic fact */
@@ -111,14 +115,17 @@ int set_ratf_solfunc_gen_default(csrMat *A, csrMat *B, ratparams *rat) {
   free(map);
   free(Cp);
   free(Ci);
-  free(Cx);
   free(Cz);
+  free_csr(&C);
+  if (!BB) {
+    free_csr(&eye);
+  }
 
   return 0;
 }
 
-/* set default solver */
-int set_ratf_solfunc_default(csrMat *A, ratparams *rat) {
+#else
+int set_ratf_solfunc_default(csrMat *A, csrMat *B, ratparams *rat) {
   int i, j, n, nnz, nnz2=0, status, *diag;
   SuiteSparse_long *Ap, *Ai;
   double *Ax, *Az;
@@ -221,6 +228,7 @@ int set_ratf_solfunc_default(csrMat *A, ratparams *rat) {
 
   return 0;
 }
+#endif
 
 void free_rat_default_sol(ratparams *rat) {
   int i;
