@@ -1,11 +1,10 @@
 ### EVSL:  EigenValues Slicing Library (Version 1.0)
 ```
-   ____      _   __      ____      __ 
-  / __/     | | / /     / __/     / / 
- / _/  _    | |/ / _   _\ \  _   / /__
-/___/ (_)   |___/ (_) /___/ (_) /____/
-                                                                        
-```
+   ____      _   __      ____      __  
+  / __/     | | / /     / __/     / /  
+ / _/  _    | |/ / _   _\ \  _   / /__ 
+/___/ (_)   |___/ (_) /___/ (_) /____/  
+```                                                                        
    ChebLanTR, ChebLanNR,  ChebSI, RatLanTr, and RatLanNr
    Polynomial  and   Rational  Filtered  Lanczos   and  subspace
    iteration algorithms For Symmetric Eigenvalue problems
@@ -143,8 +142,7 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
 
   All "func" must be of the following prototype
 ```
-      void linsolFunc(int n, double *br, double *bz, double *xr, 
-                      double *xz, void *data);
+      void linsolFunc(int n, double *br, double *bz, double *xr, double *xz, void *data);
 ```
   where n  is the size  of the system,  br, bz are  the right-hand
   side (real and  imaginary parts of complex vector),  xr, xz will
