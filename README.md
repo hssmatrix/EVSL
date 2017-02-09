@@ -24,7 +24,7 @@ restart), and a polynomial filtered subspace iteration.
 For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
 
 -----------------------------------------------------------------------    
-### Description of contents:
+### DESCRIPTION OF CONTENTS
 -----------------------------------------------------------------------
 
  * INC
