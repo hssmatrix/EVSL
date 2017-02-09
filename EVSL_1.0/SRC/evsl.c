@@ -3,8 +3,12 @@
 #include "struct.h"
 #include "internal_proto.h"
 
-/* global variable evslData, which is guaranteed to be initialized */
+/** \brief global variable of EVSL
+ *
+ * global variable is guaranteed to be initialized
+ * */
 evslData evsldata;
+
 
 void EVSLStart() {
   evsldata.Amatvec.n = -1;
