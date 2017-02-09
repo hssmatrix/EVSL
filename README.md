@@ -1,10 +1,11 @@
 ### EVSL:  EigenValues Slicing Library (Version 1.0)
+http://www-users.cs.umn.edu/~saad/software/EVSL/index.html
 ```
    ____      _   __      ____      __  
   / __/     | | / /     / __/     / /  
  / _/  _    | |/ / _   _\ \  _   / /__ 
 /___/ (_)   |___/ (_) /___/ (_) /____/  
-```                                                                        
+```                                   
    ChebLanTR, ChebLanNR,  ChebSI, RatLanTr, and RatLanNr
    Polynomial  and   Rational  Filtered  Lanczos   and  subspace
    iteration algorithms For Symmetric Eigenvalue problems
@@ -22,9 +23,10 @@ restart), and a polynomial filtered subspace iteration.
 
 For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
 
-===
-    
+-----------------------------------------------------------------------    
 ### Description of contents:
+-----------------------------------------------------------------------
+
  * INC
     - evsl.h           : user-level function prototypes and constant definitions
     - blaslapack.h     : C API for BLAS/LAPACK functions used in evsl
@@ -76,8 +78,9 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
    - GenRLanN.c : Rational filtering non-restart Lanczos
    - GenRLanR.c : Rational filtering T-R Lanczos 
    
-===
+-----------------------------------------------------------------------
 ###  INSTALLATION
+-----------------------------------------------------------------------
 
 **Library**: The users only need to modify the file makefile.in [see makefile.in.example for samples of files makefile.in that are given for mac-os and for Linux].
   ```   
