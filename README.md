@@ -23,79 +23,67 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
 ===
     
 ### Description of contents:
- #### INC/
-
-    evsl.h           : user-level function prototypes and constant definitions
-    blaslapack.h     : C API for BLAS/LAPACK functions used in evsl
-    def.h            : miscellaneous macros 
-    struct.h         : miscellaneous structs used in evsl
-    internal_proto.h : internal function prototypes for SRC/
+ * INC
+    - evsl.h           : user-level function prototypes and constant definitions
+    - blaslapack.h     : C API for BLAS/LAPACK functions used in evsl
+    - def.h            : miscellaneous macros 
+    - struct.h         : miscellaneous structs used in evsl
+    - internal_proto.h : internal function prototypes for SRC/
     
- #### SRC/
-    chelanNr.c    :  Polynomial Filtered no-restart Lanczos
-    chelanTr.c    :  Polynomial Filtered thick restart Lanczos
-    chebpoly.c    :  Computing and applying polynomial filters
-    chebsi.c      :  Polynomial Filtered Subspace iteration
-    dumps.c       :  Miscellaneous functions for I/O and for debugging 
-    evsl.c        :  Set global variable evslData
-    lanbounds.c   :  Lanczos alg. to give a bound of spectrum
-    mactime.c     :  Timer for mac os    
-    misc_la.c     :  Miscellaneous linear algebra functions
-    ratfilter.c   :  Computing and applying rational filters
-    ratlanNr.c    :  Rational Filtered no-restart Lanczos
-    ratlanTr.c    :  Rational Filtered thick restart Lanczos
-    spmat.c       :  Sparse matrix routines
-    spslicer.c    :  Spectrum slicing
-    suitesparse.c :  Interface to SuiteSparse
-    timing.c      :  Timer
-    vect.c        :  Vector operations
+ * SRC
+   - chelanNr.c    :  Polynomial Filtered no-restart Lanczos
+   - chelanTr.c    :  Polynomial Filtered thick restart Lanczos
+   - chebpoly.c    :  Computing and applying polynomial filters
+   - chebsi.c      :  Polynomial Filtered Subspace iteration
+   - dumps.c       :  Miscellaneous functions for I/O and for debugging 
+   - evsl.c        :  Set global variable evslData
+   - lanbounds.c   :  Lanczos alg. to give a bound of spectrum
+   - mactime.c     :  Timer for mac os    
+   - misc_la.c     :  Miscellaneous linear algebra functions
+   - ratfilter.c   :  Computing and applying rational filters
+   - ratlanNr.c    :  Rational Filtered no-restart Lanczos
+   - ratlanTr.c    :  Rational Filtered thick restart Lanczos
+   - spmat.c       :  Sparse matrix routines
+   - spslicer.c    :  Spectrum slicing
+   - suitesparse.c :  Interface to SuiteSparse
+   - timing.c      :  Timer
+   - vect.c        :  Vector operations
 
-  liblancheb.a  : library
+* liblancheb.a  : library
 
-####  TESTS_Gen         test drivers for Generalized Eigenvalue problem
-    LapPLanR_Gen.c : Laplacian matrices. Polynomial filtering T-R Lanczos
-    LapRLanN_Gen.c : Laplacian matrices. Rational filtering Lanczos
-    lapl.c         : functions to set up a laplacean matrix and also to 
-                     compute the exact eigenvalues of Laplacians
-    io.c           : parse command-line input parameters
+* TESTS_Gen : test drivers for Generalized Eigenvalue problem
+   - LapPLanR_Gen.c : Laplacian matrices. Polynomial filtering T-R Lanczos
+   - LapRLanN_Gen.c : Laplacian matrices. Rational filtering Lanczos
+   - lapl.c         : functions to set up a laplacean matrix and also to compute the exact eigenvalues of Laplacians
+   - io.c           : parse command-line input parameters
 
-####  TEST_Lap              test drivers for Laplacean matrices
-    LapPLanN.c         : Polynomial filtering non-restart Lanczos
-    LapPLanN_MatFree.c : "matrix-free" version: not forming matrix but
-                         passing mat-vec function
-    LapPLanR.c         : Polynomial filtering T-R Lanczos
-    LapPSI.c           : Polynomial filtering subspace iterations
-    LapRLanN.c         : Rational filtering non-restart Lanczos
-    LapRLanR.c         : Rational filtering T-R Lanczos
-    lapl.c             : Same as above
-    io.c               : Same as above
+* TEST_Lap : test drivers for Laplacean matrices
+   - LapPLanN.c         : Polynomial filtering non-restart Lanczos
+   - LapPLanN_MatFree.c : "matrix-free" version: not forming matrix but passing mat-vec function
+   - LapPLanR.c         : Polynomial filtering T-R Lanczos
+   - LapPSI.c           : Polynomial filtering subspace iterations
+   - LapRLanN.c         : Rational filtering non-restart Lanczos
+   - LapRLanR.c         : Rational filtering T-R Lanczos
+   - lapl.c             : Same as above
+   - io.c               : Same as above
 
-####  TESTS_Mat     general matrices in sparse format read from a file
-    GenPLanN.c : Polynomial filtering non-restart Lanczos
-    GenPLanR.c : Polynomial filtering T-R Lanczos
-    GenPSI.c   : Polynomial filtering subspace iterations
-    GenRLanN.c : Rational filtering non-restart Lanczos
-    GenRLanR.c : Rational filtering T-R Lanczos
- 
-  See below and 00README files therein for further information
-
------------------------------------------------------------------------
+* TESTS_Mat     general matrices in sparse format read from a file
+   - GenPLanN.c : Polynomial filtering non-restart Lanczos
+   - GenPLanR.c : Polynomial filtering T-R Lanczos
+   - GenPSI.c   : Polynomial filtering subspace iterations
+   - GenRLanN.c : Rational filtering non-restart Lanczos
+   - GenRLanR.c : Rational filtering T-R Lanczos 
+   
+===
 ###  INSTALLATION
------------------------------------------------------------------------
 
-  Library:
-     The users only need to modify the file makefile.in 
-     [see makefile.in.example for samples of files makefile.in 
-     that are given for mac-os and for Linux].
+**Library: The users only need to modify the file makefile.in [see makefile.in.example for samples of files makefile.in that are given for mac-os and for Linux].
+     
+  - cp makefile.in_Linux/MacOS.example makefile.in. 
+  - modify makefile.in [provide BLAS/LAPACK path, and optionally SuiteSparse path]
+  - make clean; make
       
-     1. cp makefile.in_Linux/MacOS.example makefile.in. 
-     2. modify makefile.in 
-        [provide BLAS/LAPACK path, and optionally SuiteSparse path]
-     3. make clean; make
-
-     make in the directory SRC will create the library liblancheb.a
-      
-  Test programs:
+* Test programs:
       In directories TESTS_Lap, TESTS_Gen and TESTS_Mat you will find makefiles to 
       run sample drivers that test a few different situations.
 
@@ -110,9 +98,9 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
       For generalized eigenvalue problem, the current version of EVSL
       will factor B with CHOLMOD. So, CHOLMOD is required.
  
-  NOTE:  SuiteSparse is NOT distributed with EVSL, and is Copyrighted
-         by Timothy Davis.  Please refer to that package for its License.
-         [http://faculty.cse.tamu.edu/davis/suitesparse.html]
+>  NOTE:  SuiteSparse is NOT distributed with EVSL, and is Copyrighted
+>         by Timothy Davis.  Please refer to that package for its License.
+>         [http://faculty.cse.tamu.edu/davis/suitesparse.html]
 
 -----------------------------------------------------------------------
 ###  LINKING  WITH  UMFPACK (SuiteSparse 4.5.3)
