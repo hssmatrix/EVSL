@@ -7,18 +7,29 @@
 #include "cholmod.h"
 #include "umfpack.h"
 
+/** @file suitesparse.c
+ *  @brief Default solver function for solving shifted system and factoring B
+ *
+ *  This file contains the default solver function for solving shifted system 
+ *  with A - SIGMA*I or A - SIGMA*B, and for factoring B matrix.
+ *  The default solvers are UMFPACK and CHOLMOD from SuiteSparse
+ *
+ */
+
+/**
+ * @brief default complex linear solver routine passed to evsl
+ * 
+ * @param n       size of the system
+ * @param br,bz   vectors of length n, complex right-hand side (real and imaginary)
+ * @data          all data that are needed for solving the system
+ * 
+ * @param[out] xr,xz     vectors of length n, complex solution (real and imaginary)
+ *
+ * @warning: This function MUST be of this prototype
+ *
+ *-------------------------------------------------------------------------*/
 void umfpack_solvefunc(int n, double *br, double *bz, double *xr, double *xz,
                        void *data) {
-  /*-------------------------------------------------------------------------
-   * complex linear solver routine passed to evsl
-   * NOTE: This function MUST be of this prototype
-   * INPUT:
-   *   n: size of the system
-   *   br, bz: vectors of length n, complex right-hand side (real and imaginary)
-   *   data: all data that are needed for solving the system
-   * OUTPUT:
-   *   xr, xz: vectors of length n, complex solution (real and imaginary)
-   *-------------------------------------------------------------------------*/
   void* Numeric = data;
   double Control[UMFPACK_CONTROL]; 
   umfpack_zl_defaults(Control);
@@ -27,6 +38,17 @@ void umfpack_solvefunc(int n, double *br, double *bz, double *xr, double *xz,
                    Numeric, Control, NULL);
 }
 
+/** @brief setup the default solver for A - SIGMA B 
+ *
+ * The setup invovles shifting the matrix A - SIGMA B and factorizing 
+ * the shifted matrix 
+ * The solver function and the data will be saved in ratparams
+ * Generally speaking, each pole can have a different solver 
+ *
+ * @param A        matrix A
+ * @param BB       matrix B, if NULL, it means B is identity
+ * @param [out] rat  the result will be saved in rat     
+ * */
 int set_ratf_solfunc_default(csrMat *A, csrMat *BB, ratparams *rat) {
   int i, j, nrow, ncol, nnzB, nnzC, *map, status;
   csrMat *B, C, eye;
@@ -48,13 +70,13 @@ int set_ratf_solfunc_default(csrMat *A, csrMat *BB, ratparams *rat) {
   }
 
   nnzB = B->ia[nrow];
-  /* NOTE: SuiteSparse matrix that must be sorted.
-   * The matadd routine can guarantee this
-   * map from nnz in B to nnz in C, useful for multi-poles */
+  /* map from nnz in B to nnz in C, useful for multi-poles */
   Malloc(map, nnzB, int);
-  /* C = A + 0.0 * B 
-   * This computes the pattern of A + B
-   * and also guarantee C has sorted rows 
+  /* NOTE: SuiteSparse requires that the matrix must be sorted.
+   * The matadd routine can guarantee this
+   * C = A + 0.0 * B 
+   * This actually computes the pattern of A + B
+   * and also can guarantee C has sorted rows 
    * map is the mapping from nnzB to nnzC */
   matadd(1.0, 0.0, A, B, &C, NULL, map);
 
@@ -127,6 +149,9 @@ int set_ratf_solfunc_default(csrMat *A, csrMat *BB, ratparams *rat) {
   return 0;
 }
 
+/**
+ * @brief free the data needed by the default linear solver 
+ */ 
 void free_rat_default_sol(ratparams *rat) {
   int i;
   if (rat->use_default_solver) {
@@ -136,8 +161,10 @@ void free_rat_default_sol(ratparams *rat) {
   }
 }
 
-/* @brief Create cholmod_sparse matrix just as a wrapper of a csrMat 
- * @warning cholmod_sparse is a CSC format. But since A is symmetric, it is the same */
+/**
+ * @brief Create cholmod_sparse matrix just as a wrapper of a csrMat
+ * This will be useful for the B matrix, since it will be factored
+ * @warning cholmod_sparse is a CSC format. But since B is symmetric, it is the same */
 cholmod_sparse* csrMat_to_cholmod_sparse(csrMat *A, int stype) {
   cholmod_sparse *B = NULL;
   Malloc(B, 1, cholmod_sparse);
@@ -161,33 +188,30 @@ cholmod_sparse* csrMat_to_cholmod_sparse(csrMat *A, int stype) {
   return B;
 }
 
+/*! 
+ * @brief data struct needed by the factor B */
 typedef struct _default_LBdata {
-  csrMat R;
-  int *perm;
-  double *work;
+  csrMat R;       /**< Cholesky factor, upper triangular */
+  int *perm;      /**< Permutation vector for Cholesky factorization
+                       P*B*P' = R' * R */
+  double *work;   /**< Workspace for performing R-solve or R-multiplication */
 } default_LBdata;
 
-/*
-void vector_to_cholmod_dense(int nrow, int ncol, double *v, int ldv,
-                             cholmod_dense *x) {
-  x->nrow = nrow;
-  x->ncol = ncol;
-  x->nzmax = nrow * ncol;
-  x->d = ldv;
-  x->x = v;
-  x->z = NULL;
-  x->xtype = CHOLMOD_REAL;
-  x->dtype = CHOLMOD_DOUBLE;
-}
-*/
-
-/*
+/**
+ * @brief functions to perform the solve with Cholesky factor of B
+ *
+ * The solve will be one of the following two types
  * soltype = 1 : x = P' * L' \ b
  *         = 2 : x = L \ P * b
+ * @param soltype    1 or 2
+ * @param b          rhs input vector
+ * @param x          lhs output vector
+ * @param data       associated data
  */ 
 void default_Lsol_combine(int soltype, double *b, double *x, void *data) {
   int n;
   default_LBdata *LBdata = (default_LBdata *) data;
+  /* NOTE: R is **UPPER** triangular */
   csrMat *R = &LBdata->R;
   int *p = LBdata->perm;
   double *w = LBdata->work;
@@ -206,27 +230,41 @@ void default_Lsol_combine(int soltype, double *b, double *x, void *data) {
   }
 }
 
+/**
+ * @brief L solve with the Cholesky factor of B
+ */ 
 void default_LSol(double *x, double *y, void *data) {
   default_Lsol_combine(2, x, y, data);
 }
 
+/**
+ * @brief L' solve with the Cholesky factor of B
+ */ 
 void default_LTSol(double *x, double *y, void *data) {
   default_Lsol_combine(1, x, y, data);
 }
 
-/*
- * soltype = 1 : x = L' * P * b
- *         = 2 : x = P' * L * b
+/**
+ * @brief functions to perform multiplications with Cholesky factor of B
+ *
+ * The multiplication will be one of the following two types
+ * type = 1 : x = L' * P * b
+ *      = 2 : x = P' * L * b
+ * @param type       1 or 2
+ * @param b          rhs input vector
+ * @param x          lhs output vector
+ * @param data       associated data
  */ 
-void default_Lmult_combine(int soltype, double *b, double *x, void *data) {
+void default_Lmult_combine(int type, double *b, double *x, void *data) {
   int n;
   default_LBdata *LBdata = (default_LBdata *) data;
+  /* NOTE: R is **UPPER** triangular */
   csrMat *R = &LBdata->R;
   int *p = LBdata->perm;
   double *w = LBdata->work;
   n = R->nrows;
 
-  if (1 == soltype) {
+  if (1 == type) {
     /* w = P * b */
     vec_perm(n, p, b, w);
     /* x = L' * w */
@@ -239,14 +277,26 @@ void default_Lmult_combine(int soltype, double *b, double *x, void *data) {
   }
 }
 
+/**
+ * @brief y= L * x with the Cholesky factor of B
+ */ 
 void default_LMult(double *x, double *y, void *data) {
   default_Lmult_combine(2, x, y, data);
 }
 
+/**
+ * @brief y= L' * x with the Cholesky factor of B
+ */ 
 void default_LTMult(double *x, double *y, void *data) {
   default_Lmult_combine(1, x, y, data);
 }
 
+/** @brief Compute Cholesky factorization of B
+ *
+ * The result will be saved in evsldata
+ *
+ * @param B       matrix B
+ * */
 int set_default_LBdata(csrMat *B) {
   int i, n = B->nrows, nnzL;
   cholmod_sparse *Bcholmod, *LBmat;
@@ -335,6 +385,9 @@ int set_default_LBdata(csrMat *B) {
   return 0;
 }
 
+/** @brief Free the Cholesky factorization of B
+ *
+ * */
 void free_default_LBdata() {
   default_LBdata *LBdata = (default_LBdata *) evsldata.LB_func_data;
   free_csr(&LBdata->R);
