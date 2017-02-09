@@ -1,8 +1,11 @@
 ### EVSL:  EigenValues Slicing Library (Version 1.0)
-              ___      __   __      ___       _    
-             | __|     \ \ / /     / __|     | |   
-             | _|   _   \ V /   _  \__ \  _  | |__ 
-             |___| (_)   \_/   (_) |___/ (_) |____|       
+```
+   ____      _   __      ____      __ 
+  / __/     | | / /     / __/     / / 
+ / _/  _    | |/ / _   _\ \  _   / /__
+/___/ (_)   |___/ (_) /___/ (_) /____/
+                                                                        
+```
    ChebLanTR, ChebLanNR,  ChebSI, RatLanTr, and RatLanNr
    Polynomial  and   Rational  Filtered  Lanczos   and  subspace
    iteration algorithms For Symmetric Eigenvalue problems
@@ -77,30 +80,29 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
 ===
 ###  INSTALLATION
 
-**Library: The users only need to modify the file makefile.in [see makefile.in.example for samples of files makefile.in that are given for mac-os and for Linux].
-     
-  - cp makefile.in_Linux/MacOS.example makefile.in. 
-  - modify makefile.in [provide BLAS/LAPACK path, and optionally SuiteSparse path]
-  - make clean; make
-      
-* Test programs:
+**Library**: The users only need to modify the file makefile.in [see makefile.in.example for samples of files makefile.in that are given for mac-os and for Linux].
+  ```   
+  cp makefile.in_Linux/MacOS.example makefile.in. 
+  modify makefile.in [provide BLAS/LAPACK path, and optionally SuiteSparse path]
+  make clean; make
+  ```    
+**Test programs**:
       In directories TESTS_Lap, TESTS_Gen and TESTS_Mat you will find makefiles to 
       run sample drivers that test a few different situations.
 
-  SuiteSparse:
+**SuiteSparse**:
       SuiteSparse is the default direct linear solver of EVSL, for the
       rational filtering and generalized eigenvalue problem.
       If EVSL is compiled with SuiteSparse and the users do not provide
-      function for solving systems with (A-SIGMA*I) and (A-SIGMA*B), 
-      EVSL will use UMFPACK to factorize (A-SIGMA*I) or (A-SIGMA*B).
+      function for solving systems with (A-SIGMA I) and (A-SIGMA B), 
+      EVSL will use UMFPACK to factorize (A-SIGMA I) or (A-SIGMA B).
       If EVSL is not compiled with SuitSparse, these functions must be
       provided by the users.
       For generalized eigenvalue problem, the current version of EVSL
       will factor B with CHOLMOD. So, CHOLMOD is required.
  
->  NOTE:  SuiteSparse is NOT distributed with EVSL, and is Copyrighted
->         by Timothy Davis.  Please refer to that package for its License.
->         [http://faculty.cse.tamu.edu/davis/suitesparse.html]
+>  NOTE:  SuiteSparse is NOT distributed with EVSL, and is Copyrighted by Timothy Davis.  
+>  Please refer to SuiteSparse package for its License. [http://faculty.cse.tamu.edu/davis/suitesparse.html]
 
 -----------------------------------------------------------------------
 ###  LINKING  WITH  UMFPACK (SuiteSparse 4.5.3)
@@ -109,15 +111,17 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
   and  CAMD,  and  optionally  METIS 5.1.0.   Compile  each  of  these
   packages  to  have  the  library  file in  the  Lib  directory.   If
   SuiteSparse  is configured  with METIS,  give the  path to  METIS (v
-  5.1.0)  as  well   (to  make  libmetis.a,  type   `make  config'  in
-  metis-5.1.0/ and then `make') 
+  5.1.0)  as  well  to  make  libmetis.a,  in metis-5.1.0/ type
+  ```
+  make  config; make
+  ```
   Please  refer to SuiteSparse and METIS for installation details.
 
 -----------------------------------------------------------------------
 ###  RATIONAL FILTERING
 -----------------------------------------------------------------------
   Rational  filtering  requires  solving  linear  systems  (where  the
-  coefficient matrix  is the  original matrix  shifted by  a *complex*
+  coefficient matrix  is the  original matrix  shifted by  a **complex**
   shift).  A linear solver routine  must be provided.  
 
   After  having  computed  the  rational  filter  by  "find_ratf(intv,
@@ -126,7 +130,10 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
   solve the linear systems. The factors will be saved in struct rat.
 
   EVSL  can  also  take  user-specified  solvers.  To  do  this,  call
-  "set_ratf_solfunc(&rat,  &Acsr,  func,  data)" to  pass  the  solver
+  ```
+  set_ratf_solfunc(&rat,  &Acsr,  func,  data)
+  ```
+  to  pass  the  solver
   functions and the associated data for each pole.  "func" is an array
   of function  pointers of  length num of  poles, i.e.,  rat->num. So,
   func[i]  is the  function  to solve  the systems  with  pole i,  the
@@ -171,12 +178,12 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
   matrices is  provided, where the  matrix is not explicitly  formed but
   5pt/7pt stencil is used instead. In  this example, a struct for matvec
   is first defined:
-
+```
   typedef struct _lapmv_t {  
     int  nx,  ny,  nz; 
     double  *stencil;  
   } lapmv_t;
-
+```
   and the matvec function is implemented
 ```
   void Lap2D3DMatvec(double  *x, double  *y,  void  *data) {  
@@ -189,10 +196,10 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
   }
 ```
   in  which   the  pointer  is  first   casted  and  all  the   data  is
-  unpacked. Once these are ready, they can be passed to EVSL by calling
-    
+  unpacked. Once these are ready, they can be passed to EVSL by calling    
+```
   SetMatvecFunc(n, &Lap2D3DMatvec, (void*) &lapmv);
-
+```
   where the first input is the size of the "matrix", the second input is
   the  function pointer  and the  third one  is the  data pointer.  Once
   "SetMatvecFunc"  is  called,  EVSL  will  use  the  registered  matvec
