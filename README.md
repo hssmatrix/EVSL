@@ -100,7 +100,7 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
       If EVSL is not compiled with SuitSparse, these functions must be
       provided by the users.
       For generalized eigenvalue problem, the current version of EVSL
-      will factor B with CHOLMOD. So, CHOLMOD is required.
+      will factor B with CHOLMOD. So, CHOLMOD is required for solving generalized eigenvalue problems.
  
 >  NOTE:  SuiteSparse is NOT distributed with EVSL, and is Copyrighted by Timothy Davis.  
 >  Please refer to SuiteSparse package for its License. [http://faculty.cse.tamu.edu/davis/suitesparse.html]
@@ -125,34 +125,42 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
   coefficient matrix  is the  original matrix  shifted by  a **complex**
   shift).  A linear solver routine  must be provided.  
 
-  After  having  computed  the  rational  filter  by  "find_ratf(intv,
-  &rat)", users  can call "set_ratf_solfunc(&rat, &Acsr,  NULL, NULL)"
+  After  having  computed  the  rational  filter  by
+  ```
+  find_ratf(intv, &rat),
+  ```
+  users  can call
+  ```
+  set_ratf_solfunc(&rat, &Acsr,  NULL, NULL)
+  ```
   to tell  EVSL to use UMFPACK  to factorize the shifted  matrices and
-  solve the linear systems. The factors will be saved in struct rat.
+  solve the linear systems. The factors will be saved in struct `rat`.
 
   EVSL  can  also  take  user-specified  solvers.  To  do  this,  call
   ```
   set_ratf_solfunc(&rat,  &Acsr,  func,  data)
   ```
   to  pass  the  solver
-  functions and the associated data for each pole.  "func" is an array
-  of function  pointers of  length num of  poles, i.e.,  rat->num. So,
-  func[i]  is the  function  to solve  the systems  with  pole i,  the
-  coefficient matrix of  which is $A - s_i I(or, B)$,  where s_i = rat->zk[i]
-  is the  complex shift.  "data"  is an array  of (void*) of  the same
-  length,  where data[i]  is the  data needed  by func[i].   
+  functions and the associated data for each pole.  `func` is an array
+  of function  pointers of  length num of  poles, i.e.,  `rat->num`. So,
+  `func[i]`  is the  function  to solve  the systems  with  pole `i`,  the
+  coefficient matrix of  which is `A - s_i I(or, B)`,  where `s_i = rat->zk[i]`
+  is the  complex shift.  `data`  is an array  of `(void*)` of  the same
+  length,  where `data[i]`  is the  data needed  by `func[i]`.   
 
   All "func" must be of the following prototype
-```
-      void linsolFunc(int n, double *br, double *bz, double *xr, double *xz, void *data);
-```
-  where n  is the size  of the system,  br, bz are  the right-hand
-  side (real and  imaginary parts of complex vector),  xr, xz will
-  be the  solution (complex vector),  and "data" contains  all the
+  ```
+  void linsolFunc(int n, double *br, double *bz, double *xr, double *xz, void *data);
+  ```
+  where `n`  is the size  of the system,  `br`, `bz` are  the right-hand
+  side (real and  imaginary parts of complex vector),  `xr`, `xz` will
+  be the  solution (complex vector),  and `data` contains  all the
   data  needed  for  the  solver.    
 
-  Once "set_ratf_solfunc" is done, rational filtering Lanczos methods 
+  Once `set_ratf_solfunc` is done, rational filtering Lanczos methods 
   should be ready to use.
+  
+  If the default solver was used, the associated data will be freed when `rat` gets freed.
       
 -----------------------------------------------------------------------
 ###  MATRIX-FREE SOLVERS
@@ -161,31 +169,31 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
   ways. Users need only to  provide the matrix-vector product function
   of the following prototype:
   ```
-      void Matvec(double *x, double *y, void *data);
-```
+  void Matvec(double *x, double *y, void *data);
+  ```
   where y  = A *  x and data  is the pointer  to the associated  data to
-  perform the  matvec. The  (void *)  argument is  to provide  a uniform
+  perform the  matvec. The  `(void *)`  argument is  to provide  a uniform
   interface  to all  user-specific  functions. For  a particular  Matvec
   function, one can pack all data  needed by this function into a struct
-  and pass the  pointer of this struct  to EVSL (after cast  it to (void
-  *)). This  function needs to  be passed to EVSL  as well, so  EVSL can
+  and pass the  pointer of this struct  to EVSL (after cast  it to `(void
+  *)`). This  function needs to  be passed to EVSL  as well, so  EVSL can
   call  this  function  to  perform  all matvecs.  Note  that  when  the
   user-input  matvec  function  is  set,  the CSR  matrix  will  not  be
-  referenced even if it  is provided (so it is safe to give NULL for the
+  referenced even if it  is provided (so it is safe to give `NULL` for the
   matrix input in this case).
 
   In  TEST_LAP,  an example  of  matvec  functions for  2D/3D  Laplacian
   matrices is  provided, where the  matrix is not explicitly  formed but
   5pt/7pt stencil is used instead. In  this example, a struct for matvec
   is first defined:
-```
+  ```
   typedef struct _lapmv_t {  
     int  nx,  ny,  nz; 
     double  *stencil;  
   } lapmv_t;
-```
+  ```
   and the matvec function is implemented
-```
+  ```
   void Lap2D3DMatvec(double  *x, double  *y,  void  *data) {  
     lapmv_t *lapmv = (lapmv_t *) data; 
     int nx = lapmv->nx; 
@@ -194,27 +202,44 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
     double *stencil = lapmv->stencil; 
     ...  
   }
-```
+  ```
   in  which   the  pointer  is  first   casted  and  all  the   data  is
   unpacked. Once these are ready, they can be passed to EVSL by calling    
-```
+  ```
   SetMatvecFunc(n, &Lap2D3DMatvec, (void*) &lapmv);
-```
+  ```
   where the first input is the size of the "matrix", the second input is
   the  function pointer  and the  third one  is the  data pointer.  Once
-  "SetMatvecFunc"  is  called,  EVSL  will  use  the  registered  matvec
+  `SetMatvecFunc`  is  called,  EVSL  will  use  the  registered  matvec
   function to perform all matvecs with A.
 
   Users should first create a function  wrapper of the above type for an
   external matvec routine. Then, following  the steps in the example, it
   will be straightforward to use it in EVSL.
-
+  
+  Call function
+  ```
+  UnsetMatvecFunc()
+  ```
+  to unset the Mat-vec function
+  
 -----------------------------------------------------------------------
 ###  GENERALIZED EIGENVALUE PROBLEM
 -----------------------------------------------------------------------
   For solving A * x = \lambda * B * x, the users must first call
   ```
-    SetRhsMatrix(&Bcsr)
-```
+  SetRhsMatrix(&Bcsr)
+  ```
   to pass B as a CSR matrix to EVSL. Internally, EVSL will use CHOLMOD
   to factorize B and save the Cholesky factors.
+ 
+ Call function
+ ```
+ UnsetRhsMatrix()
+ ```
+to free the Cholesky factor of B and other internal data for B. Matrix B will be marked as ''unset'', i.e., B=I.
+
+-----------------------------------------------------------------------
+###  MINOR ISSUES
+-----------------------------------------------------------------------
+* It is advocated to use `EVSLStart()` and `EVSLFinish()` before and after any call to the EVSL functions 
