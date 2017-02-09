@@ -110,7 +110,11 @@ void UnsetRhsMatrix() {
 /**
  * @brief matvec routine for both standard and generalized eigenvalue problem
  *
- * */
+ * y = L \ A / L' x 
+ * y = L' \ x
+ * w = A  * y
+ * y = L  \ w
+ */
 int matvec_genev(csrMat *A, double *x, double *y) {
   /* if B is not set, so just y = A * x */
   if (!evsldata.hasB) {
@@ -124,4 +128,7 @@ int matvec_genev(csrMat *A, double *x, double *y) {
   evsldata.LB_solv(w, y, evsldata.LB_func_data);
   return 0;
 }
+
+
+
 

@@ -269,7 +269,7 @@ void default_Lmult_combine(int type, double *b, double *x, void *data) {
     vec_perm(n, p, b, w);
     /* x = L' * w */
     matvec_csr('N', R, w, x);
-  } else if (2 == soltype) {
+  } else if (2 == type) {
     /* w = L * b */
     matvec_csr('T', R, b, w);
     /* x = P' * w */

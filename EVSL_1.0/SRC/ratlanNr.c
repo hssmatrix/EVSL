@@ -304,10 +304,16 @@ int RatLanNr(csrMat *A, double *intv, ratparams *rat, int maxit, double tol,
 /**
  * @brief Apply rational filter R to a vetor b
  *
+ * For generalized e.v problem x = L' * (A-SB) \ L*b [w:=work]
+ * x = L * b
+ * w = (A-sB) \ x
+ * x = L' * w
+ * 
  * @param w4 Work array of size 4*n
  *
  * @param[out] x Becomes R(A)b
- * */
+ * 
+ */
 void RatFiltApply(int n, ratparams *rat, double *b, double *x, double *w4) {
   int ii, jj, kk, k=0, kf;
   int *mulp = rat->mulp;
