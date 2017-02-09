@@ -1,13 +1,18 @@
-
- --> Version 1.0  Latest changes made on: Feb  8 14:57:14 PST 2017 <--
-
------------------------------------------------------------------------
+```
+              ___      __   __      ___       _    
+             | __|     \ \ / /     / __|     | |   
+             | _|   _   \ V /   _  \__ \  _  | |__ 
+             |___| (_)   \_/   (_) |___/ (_) |____|
+                                       
   EVSL:  ChebLanTR, ChebLanNR,  ChebSI, RatLanTr, and RatLanNr  
 
          Polynomial  and   Rational  Filtered  Lanczos   and  subspace
          iteration algorithms For Symmetric Eigenvalue problems
 
------------------------------------------------------------------------
+         Version 1.0  Latest changes made on: Feb  8 14:57:14 PST 2017
+
+```
+
 
 Welcome to EVSL. EVSL is a C library for computing the eigenvalues of
 a symmetric matrix  that are located in a given  interval.  This first
