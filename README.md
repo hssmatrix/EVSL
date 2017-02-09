@@ -23,9 +23,7 @@ For questions/feedback send e-mail to Yousef Saad [saad@umn.edu]
 ===
     
 ### Description of contents:
-
-FILES:
-  INC/
+ #### INC/
 
     evsl.h           : user-level function prototypes and constant definitions
     blaslapack.h     : C API for BLAS/LAPACK functions used in evsl
@@ -33,7 +31,7 @@ FILES:
     struct.h         : miscellaneous structs used in evsl
     internal_proto.h : internal function prototypes for SRC/
     
-  SRC/
+ #### SRC/
     chelanNr.c    :  Polynomial Filtered no-restart Lanczos
     chelanTr.c    :  Polynomial Filtered thick restart Lanczos
     chebpoly.c    :  Computing and applying polynomial filters
@@ -54,14 +52,14 @@ FILES:
 
   liblancheb.a  : library
 
-  TESTS_Gen/         test drivers for Generalized Eigenvalue problem
+####  TESTS_Gen         test drivers for Generalized Eigenvalue problem
     LapPLanR_Gen.c : Laplacian matrices. Polynomial filtering T-R Lanczos
     LapRLanN_Gen.c : Laplacian matrices. Rational filtering Lanczos
     lapl.c         : functions to set up a laplacean matrix and also to 
                      compute the exact eigenvalues of Laplacians
     io.c           : parse command-line input parameters
 
-  TEST_Lap/              test drivers for Laplacean matrices
+####  TEST_Lap              test drivers for Laplacean matrices
     LapPLanN.c         : Polynomial filtering non-restart Lanczos
     LapPLanN_MatFree.c : "matrix-free" version: not forming matrix but
                          passing mat-vec function
@@ -72,7 +70,7 @@ FILES:
     lapl.c             : Same as above
     io.c               : Same as above
 
-  TESTS_Mat/     general matrices in sparse format read from a file
+####  TESTS_Mat     general matrices in sparse format read from a file
     GenPLanN.c : Polynomial filtering non-restart Lanczos
     GenPLanR.c : Polynomial filtering T-R Lanczos
     GenPSI.c   : Polynomial filtering subspace iterations
@@ -82,7 +80,7 @@ FILES:
   See below and 00README files therein for further information
 
 -----------------------------------------------------------------------
-  INSTALLATION
+###  INSTALLATION
 -----------------------------------------------------------------------
 
   Library:
@@ -112,14 +110,12 @@ FILES:
       For generalized eigenvalue problem, the current version of EVSL
       will factor B with CHOLMOD. So, CHOLMOD is required.
  
-  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
   NOTE:  SuiteSparse is NOT distributed with EVSL, and is Copyrighted
          by Timothy Davis.  Please refer to that package for its License.
          [http://faculty.cse.tamu.edu/davis/suitesparse.html]
-  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
 
 -----------------------------------------------------------------------
-  LINKING  WITH  UMFPACK (SuiteSparse 4.5.3)
+###  LINKING  WITH  UMFPACK (SuiteSparse 4.5.3)
 -----------------------------------------------------------------------
   UMFPACK and CHOLMOD requires AMD, ,  COLAMD, CCOLAMD
   and  CAMD,  and  optionally  METIS 5.1.0.   Compile  each  of  these
@@ -130,7 +126,7 @@ FILES:
   Please  refer to SuiteSparse and METIS for installation details.
 
 -----------------------------------------------------------------------
-  RATIONAL FILTERING
+###  RATIONAL FILTERING
 -----------------------------------------------------------------------
   Rational  filtering  requires  solving  linear  systems  (where  the
   coefficient matrix  is the  original matrix  shifted by  a *complex*
@@ -151,10 +147,10 @@ FILES:
   length,  where data[i]  is the  data needed  by func[i].   
 
   All "func" must be of the following prototype
-
+```
       void linsolFunc(int n, double *br, double *bz, double *xr, 
                       double *xz, void *data);
-
+```
   where n  is the size  of the system,  br, bz are  the right-hand
   side (real and  imaginary parts of complex vector),  xr, xz will
   be the  solution (complex vector),  and "data" contains  all the
@@ -164,14 +160,14 @@ FILES:
   should be ready to use.
       
 -----------------------------------------------------------------------
-  MATRIX-FREE SOLVERS
+###  MATRIX-FREE SOLVERS
 -----------------------------------------------------------------------
   All  the  iterative solvers  in  EVSL  can  be used  in  matrix-free
   ways. Users need only to  provide the matrix-vector product function
   of the following prototype:
-  
+  ```
       void Matvec(double *x, double *y, void *data);
-
+```
   where y  = A *  x and data  is the pointer  to the associated  data to
   perform the  matvec. The  (void *)  argument is  to provide  a uniform
   interface  to all  user-specific  functions. For  a particular  Matvec
@@ -194,7 +190,7 @@ FILES:
   } lapmv_t;
 
   and the matvec function is implemented
-
+```
   void Lap2D3DMatvec(double  *x, double  *y,  void  *data) {  
     lapmv_t *lapmv = (lapmv_t *) data; 
     int nx = lapmv->nx; 
@@ -203,7 +199,7 @@ FILES:
     double *stencil = lapmv->stencil; 
     ...  
   }
-
+```
   in  which   the  pointer  is  first   casted  and  all  the   data  is
   unpacked. Once these are ready, they can be passed to EVSL by calling
     
@@ -219,11 +215,11 @@ FILES:
   will be straightforward to use it in EVSL.
 
 -----------------------------------------------------------------------
-  GENERALIZED EIGENVALUE PROBLEM
+###  GENERALIZED EIGENVALUE PROBLEM
 -----------------------------------------------------------------------
   For solving A * x = \lambda * B * x, the users must first call
-  
+  ```
     SetRhsMatrix(&Bcsr)
-
+```
   to pass B as a CSR matrix to EVSL. Internally, EVSL will use CHOLMOD
   to factorize B and save the Cholesky factors.
