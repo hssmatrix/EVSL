@@ -283,9 +283,17 @@ int ChebSI(csrMat *A, int nev, double *intv, int maxit,
       idx++;  
     }   
   } 
+ 
+  /* for generalized eigenvalue problem: L' \ W */
+  if (evsldata.hasB) {
+    for (i=0; i<idx; i++) {
+      evsldata.LBT_solv(V_out+i*n, work, evsldata.LB_func_data);
+      DCOPY(&n, work, &one, V_out+i*n, &one);
+    }
+  }
 
   /*-------------------- Done.  output : */
-  *nevo = nlock_ab;
+  *nevo = idx;
   *lamo = Lam_out;
   *Yo = V_out;
   *reso = res_out;  

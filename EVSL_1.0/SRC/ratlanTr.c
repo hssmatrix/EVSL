@@ -437,6 +437,15 @@ res: related residual norms */
     fprintf(fstats, "     Number of evals found = %d\n", lock);
     fprintf(fstats, "--------------------------------------------------\n");
   }
+
+  /* for generalized eigenvalue problem: L' \ Y */
+  if (evsldata.hasB) {
+    for (i=0; i<lock; i++) {
+      evsldata.LBT_solv(Y+i*n, work, evsldata.LB_func_data);
+      DCOPY(&n, work, &one, Y+i*n, &one);
+    }
+  }
+
   /*-------------------- Done.  output : */
   *nev2 = lock;
   *lamo = Lam;

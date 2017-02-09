@@ -6,6 +6,10 @@
 /* global variable evslData, which is guaranteed to be initialized */
 evslData evsldata;
 
+/**
+ * @brief Initialize evslData 
+ *
+ * */
 void EVSLStart() {
   evsldata.Amatvec.n = -1;
   evsldata.Amatvec.func = NULL;
@@ -20,6 +24,10 @@ void EVSLStart() {
   evsldata.LB_func_work = NULL;
 }
 
+/**
+ * @brief Finish EVSL. Free memory for B factor if it was not freed
+ *
+ * */
 void EVSLFinish() {
   if (evsldata.hasB && evsldata.isDefaultLB) {
     free_default_LBdata();
@@ -30,18 +38,32 @@ void EVSLFinish() {
   }
 }
 
+/**
+ * @brief Set the user-input matvec routine and the associated data.
+ * Save them in evsldata
+ * @warning Once this matvec func is set, matrix A will be ignored even it
+ * is provided
+ * */
 void SetMatvecFunc(int n, MVFunc func, void *data) {
   evsldata.Amatvec.n = n;
   evsldata.Amatvec.func = func;
   evsldata.Amatvec.data = data;
 }
 
+/**
+ * @brief Unset the matvec routine and the associated data.
+ * */
 void UnsetMatvecFunc() {
   evsldata.Amatvec.n = -1;
   evsldata.Amatvec.func = NULL;
   evsldata.Amatvec.data = NULL;
 }
 
+/**
+ * @brief For generalized eigenvalue problem, set the B matrix.
+ * To use this function, EVSL must have been compiled with SUITESPARSE
+ * B will be factored and the factors will be saved in evsldata
+ * */
 int SetRhsMatrix(csrMat *B) {
   int err;
 #ifdef EVSL_WITH_SUITESPARSE
@@ -58,6 +80,10 @@ int SetRhsMatrix(csrMat *B) {
   return err;
 }
 
+/**
+ * @brief Set the B = I, i.e, the problem becomes standard eigenvalue problem
+ * B factors, if present, will be freed
+ * */
 void UnsetRhsMatrix() {
 #ifdef EVSL_WITH_SUITESPARSE
   if (evsldata.hasB && evsldata.isDefaultLB) {
@@ -78,7 +104,10 @@ void UnsetRhsMatrix() {
   }
 }
 
-/* matvec routine */
+/**
+ * @brief matvec routine for both standard and generalized eigenvalue problem
+ *
+ * */
 int matvec_genev(csrMat *A, double *x, double *y) {
   /* if B is not set, so just y = A * x */
   if (!evsldata.hasB) {
