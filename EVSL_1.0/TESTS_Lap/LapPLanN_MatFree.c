@@ -92,6 +92,8 @@ int main(int argc, char *argv[]) {
   fprintf(fstats, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
   fprintf(fstats, "Laplacian: %d x %d x %d, n = %d\n", nx, ny, nz, n);
   fprintf(fstats, "Interval: [%20.15f, %20.15f]  -- %d slices \n", a, b, nslices);
+  /*-------------------- start EVSL */
+  EVSLStart();
   /*-------------------- without forming the matrix, 
    *                     just setup the matvec function and data */
   SetMatvecFunc(n, &Lap2D3DMatvec, (void*) &lapmv);
@@ -101,8 +103,6 @@ int main(int argc, char *argv[]) {
   /*-------------------- define kpmdos parameters */
   Mdeg = 300;
   nvec = 60;
-  /*-------------------- start EVSL */
-  EVSLStart();
   //-------------------- call kpmdos 
   mu = malloc((Mdeg+1)*sizeof(double));
   double t = cheblan_timer();
