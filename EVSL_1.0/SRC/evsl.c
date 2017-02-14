@@ -32,6 +32,7 @@ void EVSLStart() {
  *
  * */
 void EVSLFinish() {
+#ifdef EVSL_WITH_SUITESPARSE
   if (evsldata.hasB && evsldata.isDefaultLB) {
     free_default_LBdata();
     free(evsldata.LB_func_data);
@@ -39,6 +40,7 @@ void EVSLFinish() {
   if (evsldata.LB_func_work) {
     free(evsldata.LB_func_work);
   }
+#endif
 }
 
 /**
