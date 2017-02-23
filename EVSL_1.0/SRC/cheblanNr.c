@@ -197,7 +197,7 @@ int ChebLanNr(csrMat *A, double *intv, int maxit, double tol, double *vinit,
     /*--------------------   diagonalize  T(1:k,1:k)       */
     /*                       vals in EvalT, vecs in EvecT  */
     kdim = k+1;
-#if 1
+#if 0
     //-------------------- THIS uses dsetv
     SymmTridEig(EvalT, EvecT, kdim, dT, eT);
     count = kdim;
@@ -213,9 +213,11 @@ int ChebLanNr(csrMat *A, double *intv, int maxit, double tol, double *vinit,
     nconv = 0;
     for (i=0; i<count; i++) {
       flami = EvalT[i];
-      if (flami >= bar) tr1+= flami;
+      if (flami + DBL_EPSILON >= bar) {
+	tr1+= flami;
       // the last row of EvecT: EvecT[i*kdim+kdim-1]
-      if (beta*fabs(EvecT[(i+1)*kdim-1]) < tol) nconv++;
+	if (beta*fabs(EvecT[(i+1)*kdim-1]) < tol) nconv++;
+      }
     }
 
     if (do_print) {
@@ -243,7 +245,7 @@ int ChebLanNr(csrMat *A, double *intv, int maxit, double tol, double *vinit,
     //-------------------- make sure to normalize
     t = DNRM2(&kdim, y, &one);  t = 1.0 / t; 
     DSCAL(&kdim, &t, y, &one);
-    //-------------------- residual norm 
+    //-------------------- residual norm for transformed Pb.
     resi = beta*fabs(y[kdim-1]);
     if (resi > tol)
       continue;
@@ -258,7 +260,7 @@ int ChebLanNr(csrMat *A, double *intv, int maxit, double tol, double *vinit,
     t2 = DDOT(&n, wk, &one, u, &one);
     t  = t2 / t1;
     /*--------------------  if lambda (==t) is in [a,b] */
-    if (t < aa - DBL_EPSILON || t > bb + DBL_EPSILON) 
+      if (t < aa - DBL_EPSILON || t > bb + DBL_EPSILON) 
       continue;
     /*-------------------- compute residual wrt A for this pair */
     nt = -t;

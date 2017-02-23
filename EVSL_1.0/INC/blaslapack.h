@@ -33,8 +33,6 @@ void DSYEV(char* jobz,char* uplo,int* n,double* fa,int* lda,double* w, double* w
 void DSTEMR(char *jobz, char *range, int *n, double *D, double *E, double *VL, double *VU, int *IL, int *IU, 
 	    int *M, double *W, double *Z, int *LDZ, int *NZC, int *ISUPPZ, logical *TRYRAC, double *WORK, 
 	    int *LWORK, int *IWORK, int *LIWORK, int *INFO);
-void DHSEQR(char* jobz,char* compz,int* n,int* ilo,int* ihi,double* h,int* ldh,double* wr,double* wi,
-	    double* z,int* ldz,double* work, int* lwork,int* info);
 void ZGESV(int *n, int *nrow, complex double * A, int* m, int* ipiv, complex double *rhs, int* k, int* INFO);
 
 #endif
