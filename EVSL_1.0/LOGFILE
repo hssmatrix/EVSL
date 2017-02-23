@@ -1,3 +1,10 @@
+
+Feb 23, 2017 YS. Function rootcheb has been recoded -- it now avoids
+ calling lapack and solving a Hessenberg eigenvalue problem.
+ I also made a slight change in the stopping test for chenlanNr.c
+ [a star/end set of braces were missing - which caused to add work.]
+ Files affected the above 2 + INC/blaslapack... 
+
 Feb 9, 2017. RL
 Add features of matrix-free solvers and generalized eigenvalue problems.
 Changed all 5 solvers accordingly for these two features.
