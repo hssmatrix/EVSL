@@ -102,13 +102,7 @@ int LanDos(const int nvec, int msteps, int npts, double *xdos,
         DAXPY(&n, &mt, &V[i * n], &one, &V[(j + 1) * n], &one);
       }
       bet[j] = DDOT(&n, &V[(j + 1) * n], &one, &V[(j + 1) * n], &one);
-      if (bet[j] * (j + 1) < orthTol * wn) {
-        fprintf(stdout, "lanbounds: lucky break, j=%d, beta=%e, break\n", j,
-                bet[j]);
-        msteps = j + 1;
-        break;
-      }
-      if (bet[j] > tolBdwn) {  // If it's not zero, continue as normal
+      if (bet[j] * (j + 1) > orthTol * wn) {  // If it's not zero, continue as normal
         wn += 2.0 * bet[j];
         bet[j] = sqrt(bet[j]);
         t = 1.0 / bet[j];
@@ -116,6 +110,7 @@ int LanDos(const int nvec, int msteps, int npts, double *xdos,
       } else {  // Otherwise generate a new vector and redo the previous
                 // calculations on it
         randn_double(n, v);  // w = randn(size(A,1),1);
+        DCOPY(&n, v, &one, &V[(j+1)*n], &one);                   
         for (i = 0; i <= j; i++) {
           t = DDOT(&n, &V[(j + 1) * n], &one, &V[i * n], &one);
           double mt = -t;
